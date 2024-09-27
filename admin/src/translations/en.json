@@ -1,0 +1,15 @@
+{
+  "app.name": "Gen Types",
+  "page.title": "Generated Types",
+  "page.subTitle": "Quickly view & copy the types generated for your Strapi collections",
+  "page.copy.notSupported.title": "Copy not supported",
+  "page.copy.notSupported.message": "Your browser does not support copying to clipboard",
+  "page.copy.success.title": "Copied to Clipboard",
+  "page.copy.success.message": "The value has been copied to the clipboard.",
+  "page.copy.error.title": "Failed to Copy",
+  "page.copy.error.message": "The value could not be copied to the clipboard.",
+  "page.tooltip.interfaceFor": "Interface for",
+  "page.tooltip.copyInterface": "Copy Interface",
+  "page.copy.copyAll": "Copy All",
+  "page.copy.copyAll.tooltip": "Click to copy all types"
+}
