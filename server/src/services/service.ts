@@ -300,6 +300,10 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
       strapi.log.info(`Generated consolidated interfaces at ${outPath}`);
     }
     if (!singleFile) {
+      // ensure outPath exists
+      if (!fs.existsSync(outPath)) {
+        fs.mkdirSync(outPath);
+      }
       // Create the files for userFields, roleFields, findOnePayload, and findManyPayload
       // Add role import to userFields
       const roleImport = `import { Role } from './role';\n`;
