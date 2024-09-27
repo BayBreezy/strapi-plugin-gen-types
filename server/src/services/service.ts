@@ -152,8 +152,13 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
   generateInterfaceStrings: () => {
     const apiDir = `${process.cwd()}/src/api`;
     const componentsDir = `${process.cwd()}/src/components`;
-    const schemaFiles = strapi.service(`plugin::${pluginName}.service`).walkDirectory(apiDir);
-    const componentSchemaFiles = strapi.service(`plugin::${pluginName}.service`).walkDirectory(componentsDir);
+
+    let schemaFiles = [];
+    if (fs.existsSync(apiDir))
+      schemaFiles = strapi.service(`plugin::${pluginName}.service`).walkDirectory(apiDir);
+    let componentSchemaFiles = [];
+    if (fs.existsSync(componentsDir))
+      componentSchemaFiles = strapi.service(`plugin::${pluginName}.service`).walkDirectory(componentsDir);
 
     const holdingArray = new Map();
     componentSchemaFiles.forEach((schemaFile) => {
@@ -202,8 +207,12 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
   generateInterfaces: (outPath: string, singleFile: boolean) => {
     const apiDir = `${process.cwd()}/src/api`;
     const componentsDir = `${process.cwd()}/src/components`;
-    const schemaFiles = strapi.service(`plugin::${pluginName}.service`).walkDirectory(apiDir);
-    const componentSchemaFiles = strapi.service(`plugin::${pluginName}.service`).walkDirectory(componentsDir);
+    let schemaFiles = [];
+    if (fs.existsSync(apiDir))
+      schemaFiles = strapi.service(`plugin::${pluginName}.service`).walkDirectory(apiDir);
+    let componentSchemaFiles = [];
+    if (fs.existsSync(componentsDir))
+      componentSchemaFiles = strapi.service(`plugin::${pluginName}.service`).walkDirectory(componentsDir);
 
     let consolidatedInterfaces = "";
     let consolidatedImports: Set<string> = new Set();
