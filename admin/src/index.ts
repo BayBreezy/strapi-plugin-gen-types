@@ -2,6 +2,7 @@ import { PLUGIN_ID } from "./pluginId";
 import { Initializer } from "./components/Initializer";
 import { PluginIcon } from "./components/PluginIcon";
 import { prefixPluginTranslations } from "./utils/prefixPluginTranslations";
+import { PERMISSIONS } from "./permissions";
 
 export default {
   register(app: any) {
@@ -12,7 +13,11 @@ export default {
         id: `${PLUGIN_ID}.page.title`,
         defaultMessage: PLUGIN_ID,
       },
-      Component: () => import("./pages/App"),
+      Component: () =>
+        import("./pages/App").then((mod) => ({
+          default: mod.App,
+        })),
+      permissions: PERMISSIONS["menu-link"],
     });
 
     app.registerPlugin({
