@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.0.5
+
+[compare changes](https://github.com/BayBreezy/strapi-plugin-gen-types/compare/v0.0.4...v0.0.5)
+
+### 🏡 Chore
+
+- Ensure that output path exist in new projects ([f4f53ae](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/f4f53ae))
+
+### ❤️ Contributors
+
+- Behon Baker ([@BayBreezy](http://github.com/BayBreezy))
+
 ## v0.0.4
 
 [compare changes](https://github.com/BayBreezy/strapi-plugin-gen-types/compare/v0.0.3...v0.0.4)
