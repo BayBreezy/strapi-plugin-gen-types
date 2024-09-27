@@ -1,6 +1,6 @@
 {
   "name": "strapi-plugin-gen-types",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Generate types for the different collections, single types & components found in your application",
   "keywords": [
     "strapi5",
