@@ -1,7 +1,8 @@
 import { useIntl } from "react-intl";
 import { Divider, Grid, Accordion, Box, IconButton, Tooltip, Button } from "@strapi/design-system";
 import { Duplicate } from "@strapi/icons";
-import { Page, useNotification, Layouts } from "@strapi/admin/strapi-admin";
+import { Page, Layouts } from "@strapi/admin/strapi-admin";
+import { useNotification } from "@strapi/strapi/admin";
 import { getInterfaces } from "../services";
 import { getTranslation } from "../utils/getTranslation";
 import React from "react";
@@ -97,9 +98,9 @@ const HomePage = () => {
         ) : (
           <Grid.Root gap={5} style={{ alignItems: "start", paddingBottom: "30px" }}>
             {apiResponse &&
-              Object.entries(apiResponse).map(([key, value]) => (
+              Object.entries(apiResponse).map(([key, value], idx) => (
                 <Grid.Item col={6} key={key}>
-                  <Accordion.Root style={{ width: "100%" }}>
+                  <Accordion.Root defaultValue={idx == 0 && key} style={{ width: "100%" }}>
                     <Accordion.Item value={key}>
                       <Accordion.Header>
                         <Accordion.Trigger
