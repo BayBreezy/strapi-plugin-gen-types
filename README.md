@@ -2,6 +2,8 @@
 
 Generate types for the different collections, single types & components found in your application.
 
+![Screenshot of Gen Types UI in Strapi Admin Panel](/screenshot.jpeg)
+
 > This plugin is still in development. Please use with caution.
 
 > This plugin will not run in production. It is only meant to be used in development.
