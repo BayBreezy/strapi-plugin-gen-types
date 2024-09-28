@@ -6,11 +6,17 @@ import { useNotification } from "@strapi/strapi/admin";
 import { getInterfaces } from "../services";
 import { getTranslation } from "../utils/getTranslation";
 import React from "react";
+import { LightAsync as SyntaxHighlighter } from "react-syntax-highlighter";
+import ts from "react-syntax-highlighter/dist/esm/languages/hljs/typescript";
+import darkTheme from "react-syntax-highlighter/dist/esm/styles/hljs/shades-of-purple";
+import lightTheme from "react-syntax-highlighter/dist/esm/styles/hljs/xcode";
 
 const HomePage = () => {
+  SyntaxHighlighter.registerLanguage("typescript", ts);
   const { formatMessage } = useIntl();
   const { toggleNotification } = useNotification();
   const [apiResponse, setApiResponse] = React.useState<Record<string, string>>();
+  const [theme, setTheme] = React.useState(lightTheme);
 
   React.useEffect(() => {
     const fetchInterfaces = async () => {
@@ -19,6 +25,33 @@ const HomePage = () => {
     };
 
     fetchInterfaces();
+  }, []);
+
+  React.useEffect(() => {
+    const storedTheme = localStorage.getItem("STRAPI_THEME");
+
+    const updateTheme = () => {
+      if (storedTheme === "light") {
+        setTheme(lightTheme);
+      } else if (storedTheme === "dark") {
+        setTheme(darkTheme);
+      } else if (storedTheme === "system") {
+        const systemDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        setTheme(systemDarkMode ? darkTheme : lightTheme);
+      }
+    };
+
+    updateTheme();
+
+    // Listen for changes in system preference in case user changes it
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleSystemThemeChange = (e: any) => {
+      if (storedTheme === "system") {
+        setTheme(e.matches ? darkTheme : lightTheme);
+      }
+    };
+
+    mediaQuery.onchange = handleSystemThemeChange;
   }, []);
 
   const copyAllInterfaces = () => {
@@ -126,7 +159,15 @@ const HomePage = () => {
                                 </IconButton>
                               </Tooltip>
                             </div>
-                            <pre style={{ fontSize: "14px", userSelect: "all" }}>{value}</pre>
+                            <SyntaxHighlighter
+                              showLineNumbers
+                              lineNumberStyle={{ opacity: "0.5" }}
+                              customStyle={{ fontSize: "14px", borderRadius: "4px" }}
+                              language="typescript"
+                              style={theme}
+                            >
+                              {value}
+                            </SyntaxHighlighter>
                           </div>
                         </Box>
                       </Accordion.Content>
