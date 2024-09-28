@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.0.6
+
+[compare changes](https://github.com/BayBreezy/strapi-plugin-gen-types/compare/v0.0.5...v0.0.6)
+
+### 📖 Documentation
+
+- **readme:** Add screenshot to readme ([ac7590e](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/ac7590e))
+- **admin ui:** Replace pre tag with React Syntax Highlighter component ([f17c909](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/f17c909))
+
+### 🏡 Chore
+
+- Add homepage to pkg.json file ([8a0d266](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/8a0d266))
+- Add dependabot.yml ([34bdc85](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/34bdc85))
+
+### ❤️ Contributors
+
+- Behon Baker ([@BayBreezy](http://github.com/BayBreezy))
+
 ## v0.0.5
 
 [compare changes](https://github.com/BayBreezy/strapi-plugin-gen-types/compare/v0.0.4...v0.0.5)
