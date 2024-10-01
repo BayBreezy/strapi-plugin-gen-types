@@ -30,7 +30,7 @@ The following options are available:
 ```typescript
 // config/plugins.ts
 export default ({ env }) => ({
-  "strapi-plugin-gen-types": {
+  "gen-types": {
     enabled: true,
     config: {
       outputLocation: "myTypes.ts",

@@ -83,7 +83,7 @@
   "access": "public",
   "strapi": {
     "kind": "plugin",
-    "name": "strapi-plugin-gen-types",
+    "name": "gen-types",
     "displayName": "Strapi Plugin Generate Types",
     "description": "Generate types for the different collections, single types & components found in your application"
   }

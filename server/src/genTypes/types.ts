@@ -19,4 +19,4 @@ export interface StrapiSchema {
 /**
  * The name of the plugin
  */
-export const pluginName = "strapi-plugin-gen-types";
+export const pluginName = "gen-types";
