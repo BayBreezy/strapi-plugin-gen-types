@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.0.7
+
+[compare changes](https://github.com/BayBreezy/strapi-plugin-gen-types/compare/v0.0.6...v0.0.7)
+
+### 🩹 Fixes
+
+- Remove `strapi-plugin` from the start of the plugin name. ([b980fad](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/b980fad))
+
+### ❤️ Contributors
+
+- Behon Baker ([@BayBreezy](http://github.com/BayBreezy))
+
 ## v0.0.6
 
 [compare changes](https://github.com/BayBreezy/strapi-plugin-gen-types/compare/v0.0.5...v0.0.6)
