@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.0.8
+
+[compare changes](https://github.com/BayBreezy/strapi-plugin-gen-types/compare/v0.0.7...v0.0.8)
+
+### 🏡 Chore
+
+- Create FUNDING.yml ([2c3193c](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/2c3193c))
+- Update FUNDING.yml ([aebfb5a](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/aebfb5a))
+- **deps-dev:** Bump @strapi/typescript-utils from 5.0.1 to 5.0.3 ([2d410e6](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/2d410e6))
+- **deps-dev:** Bump @types/react from 18.3.10 to 18.3.11 ([1abfa04](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/1abfa04))
+- **deps-dev:** Bump @strapi/strapi from 5.0.1 to 5.0.3 ([196476f](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/196476f))
+- **deps-dev:** Bump @strapi/strapi from 5.0.3 to 5.0.6 ([08666fc](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/08666fc))
+- **deps-dev:** Bump @strapi/sdk-plugin from 5.2.6 to 5.2.7 ([75b7ba3](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/75b7ba3))
+- **deps-dev:** Bump react-router-dom from 6.26.2 to 6.27.0 ([3c16aca](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/3c16aca))
+- **deps-dev:** Bump typescript from 5.6.2 to 5.6.3 ([e33fe23](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/e33fe23))
+- Bump deps ([7bd171f](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/7bd171f))
+
+### ❤️ Contributors
+
+- Behon Baker ([@BayBreezy](http://github.com/BayBreezy))
+
 ## v0.0.7
 
 [compare changes](https://github.com/BayBreezy/strapi-plugin-gen-types/compare/v0.0.6...v0.0.7)
