@@ -1,3 +1,5 @@
+<img src="/Gen Types Logo.png" style="height: 70px; margin: 0px; border-radius: 12px;" />
+
 # Strapi Plugin Gen Types
 
 Generate types for the different collections, single types & components found in your application.
