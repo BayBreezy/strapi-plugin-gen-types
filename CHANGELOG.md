@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.0.9
+
+[compare changes](https://github.com/BayBreezy/strapi-plugin-gen-types/compare/v0.0.8...v0.0.9)
+
+### 🏡 Chore
+
+- **deps-dev:** Bump @strapi/typescript-utils from 5.0.6 to 5.1.0 ([6a037f5](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/6a037f5))
+- **deps-dev:** Bump @strapi/strapi from 5.0.6 to 5.1.0 ([ff3b24a](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/ff3b24a))
+- Bump deps ([cfc6c0d](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/cfc6c0d))
+
+### ❤️ Contributors
+
+- Behon Baker ([@BayBreezy](http://github.com/BayBreezy))
+
 ## v0.0.8
 
 [compare changes](https://github.com/BayBreezy/strapi-plugin-gen-types/compare/v0.0.7...v0.0.8)
