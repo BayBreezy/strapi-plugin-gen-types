@@ -78,7 +78,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
         }
         return "Media | null";
       case "component":
-        const componentName = _.upperFirst(_.camelCase(attribute.component?.split(".")?.pop()));
+        const componentName = _.upperFirst(_.camelCase(attribute.component));
         if (attribute.repeatable) {
           return `${componentName}[] | null`;
         }
@@ -220,7 +220,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
     componentSchemaFiles.forEach((schemaFile) => {
       const schemaJson = fs.readFileSync(schemaFile, "utf-8");
       const schema: StrapiSchema = destr(schemaJson);
-      const modelName = path.basename(path.dirname(schemaFile)); // Use parent folder name as model name
+      const modelName = `${path.basename(path.dirname(schemaFile))}.${path.parse(schemaFile).name}`; // Use parent folder + file name as model name
 
       // Generate the TypeScript interface
       const { interfaceString, imports } = strapi
