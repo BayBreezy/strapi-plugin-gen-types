@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.0.11
+
+[compare changes](https://github.com/BayBreezy/strapi-plugin-gen-types/compare/v0.0.10...v0.0.11)
+
+### 🩹 Fixes
+
+- Use component file names for interface generation ([2fdeca2](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/2fdeca2))
+
+### 🏡 Chore
+
+- **release:** V0.0.10 ([ba2093a](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/ba2093a))
+- Bump deps ([a0bdbc3](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/a0bdbc3))
+
+### ❤️ Contributors
+
+- Behon Baker ([@BayBreezy](http://github.com/BayBreezy))
+- Mateus Sachetti <mateus.sachetti@gmail.com>
+
 ## v0.0.10
 
 [compare changes](https://github.com/BayBreezy/strapi-plugin-gen-types/compare/v0.0.9...v0.0.10)
