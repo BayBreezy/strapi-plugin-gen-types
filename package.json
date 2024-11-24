@@ -55,7 +55,7 @@
     "@strapi/design-system": "^2.0.0-rc.12",
     "@strapi/icons": "^2.0.0-rc.12",
     "destr": "^2.0.3",
-    "react-intl": "^6.8.7",
+    "react-intl": "^7.0.1",
     "react-syntax-highlighter": "^15.6.1"
   },
   "devDependencies": {
