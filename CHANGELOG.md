@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.0.14
+
+[compare changes](https://github.com/BayBreezy/strapi-plugin-gen-types/compare/v0.0.13...v0.0.14)
+
+### 🏡 Chore
+
+- Bump deps ([b094a75](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/b094a75))
+
+### ❤️ Contributors
+
+- Behon Baker ([@BayBreezy](http://github.com/BayBreezy))
+
 ## v0.0.13
 
 [compare changes](https://github.com/BayBreezy/strapi-plugin-gen-types/compare/v0.0.12...v0.0.13)
