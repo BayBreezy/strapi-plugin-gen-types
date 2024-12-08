@@ -62,13 +62,13 @@
     "@strapi/sdk-plugin": "^5.2.7",
     "@strapi/strapi": "^5.5.0",
     "@strapi/typescript-utils": "^5.5.0",
-    "@types/react": "^18.3.14",
+    "@types/react": "^19.0.1",
     "@types/react-dom": "^18.3.2",
     "@types/react-syntax-highlighter": "^15.5.13",
     "changelogen": "^0.5.7",
     "prettier": "^3.4.2",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "react-router-dom": "^6.28.0",
     "styled-components": "^6.1.13",
     "typescript": "^5.7.2"
@@ -76,8 +76,8 @@
   "peerDependencies": {
     "@strapi/sdk-plugin": "^5.2.6",
     "@strapi/strapi": "^5.0.1",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "react-router-dom": "^6.26.2",
     "styled-components": "^6.1.13"
   },
