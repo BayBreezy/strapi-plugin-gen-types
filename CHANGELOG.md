@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.0.15
+
+[compare changes](https://github.com/BayBreezy/strapi-plugin-gen-types/compare/v0.0.14...v0.0.15)
+
+### 🩹 Fixes
+
+- Update how component types were being imported and named. closes #55 ([#55](https://github.com/BayBreezy/strapi-plugin-gen-types/issues/55))
+
+### 🏡 Chore
+
+- **deps-dev:** Bump @strapi/strapi from 5.5.0 to 5.5.1 ([4451194](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/4451194))
+- **deps-dev:** Bump @strapi/typescript-utils from 5.5.0 to 5.5.1 ([a092c4d](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/a092c4d))
+- **deps-dev:** Bump @strapi/sdk-plugin from 5.2.7 to 5.2.8 ([f0a312f](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/f0a312f))
+- Bump deps ([11f67a8](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/11f67a8))
+- Bump deps ([93d36f6](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/93d36f6))
+
+### ❤️ Contributors
+
+- Behon Baker ([@BayBreezy](http://github.com/BayBreezy))
+
 ## v0.0.14
 
 [compare changes](https://github.com/BayBreezy/strapi-plugin-gen-types/compare/v0.0.13...v0.0.14)
