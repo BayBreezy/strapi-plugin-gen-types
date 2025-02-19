@@ -140,8 +140,6 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
       if (attribute.type === "component" && attribute.component) {
         // replace the dots(.) with _ and then convert to camelCase
         const componentName = _.upperFirst(_.camelCase(attribute.component.replace(/\./g, "_")));
-        console.log("componentName", componentName);
-
         if (!imports.includes(componentName)) {
           imports.push(componentName);
         }
