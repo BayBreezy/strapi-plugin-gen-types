@@ -14,6 +14,9 @@ import {
 } from "../genTypes/constants";
 import { destr } from "destr";
 
+const constructImportLine = (model: string, quote: "'" | '"') =>
+  `import { ${model} } from ${quote}./${_.camelCase(model)}${quote};`;
+
 const service = ({ strapi }: { strapi: Core.Strapi }) => ({
   /**
    * Walk a directory and return an array of file paths
@@ -205,9 +208,10 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
   /**
    * Generate TypeScript interfaces from Strapi schema files
    */
-  generateInterfaces: (outPath: string, singleFile: boolean) => {
+  generateInterfaces: (outPath: string, singleFile: boolean, singleQuote: boolean = true) => {
     const apiDir = `${process.cwd()}/src/api`;
     const componentsDir = `${process.cwd()}/src/components`;
+    const quoteSymbol = singleQuote ? `'` : `"`;
     let schemaFiles = [];
     if (fs.existsSync(apiDir))
       schemaFiles = strapi.service(`plugin::${pluginName}.service`).walkDirectory(apiDir);
@@ -241,9 +245,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
         const outputFilePath = path.resolve(outPath, `${_.camelCase(modelName)}.ts`);
 
         // Generate imports for the interface
-        const importStatements = imports
-          .map((model) => `import { ${model} } from './${_.camelCase(model)}';`)
-          .join("\n");
+        const importStatements = imports.map((model) => constructImportLine(model, quoteSymbol)).join("\n");
 
         const fileContent = `${importStatements}\n\n${interfaceString}`;
         fs.writeFileSync(outputFilePath, fileContent);
@@ -274,9 +276,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
         const outputFilePath = path.resolve(outPath, `${_.camelCase(modelName)}.ts`);
 
         // Generate imports for the interface
-        const importStatements = imports
-          .map((model) => `import { ${model} } from './${_.camelCase(model)}';`)
-          .join("\n");
+        const importStatements = imports.map((model) => constructImportLine(model, quoteSymbol)).join("\n");
 
         const fileContent = `${importStatements}\n\n${interfaceString}`;
         fs.writeFileSync(outputFilePath, fileContent);
@@ -287,7 +287,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
     if (singleFile) {
       // Generate import statements for all the unique imports
       const importStatements = Array.from(consolidatedImports)
-        .map((model) => `import { ${model} } from './${_.camelCase(model)}';`)
+        .map((model) => constructImportLine(model, quoteSymbol))
         .join("\n");
 
       // Add mediaFields, userFields, roleFields, findOnePayload, and findManyPayload to the consolidated
@@ -307,7 +307,8 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
       }
       // Create the files for userFields, roleFields, findOnePayload, and findManyPayload
       // Add role import to userFields
-      const roleImport = `import { Role } from './role';\n`;
+      const roleImport = constructImportLine("Role", quoteSymbol) + "\n";
+
       fs.writeFileSync(path.resolve(outPath, "user.ts"), roleImport + userFields);
       fs.writeFileSync(path.resolve(outPath, "role.ts"), roleFields);
       fs.writeFileSync(path.resolve(outPath, "media.ts"), mediaFields);
