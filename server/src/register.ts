@@ -10,7 +10,7 @@ const register = ({ strapi }: { strapi: Core.Strapi }) => {
     const config: GenTypesConfig = strapi.config.get("plugin::gen-types");
     strapi
       .service(`plugin::${pluginName}.service`)
-      .generateInterfaces(config.outputLocation, config.singleFile);
+      .generateInterfaces(config.outputLocation, config.singleFile, config?.prettier?.singleQuote);
   }
 };
 

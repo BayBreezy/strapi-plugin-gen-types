@@ -16,12 +16,26 @@ export type GenTypesConfig = {
    * @default false
    */
   singleFile: boolean;
+  /**
+   * Formatting options for generated files
+   */
+  prettier?: {
+    /**
+     * Use single quotes instead of double quotes in imports
+     *
+     * @default true
+     */
+    singleQuote?: boolean;
+  };
 };
 
 export default {
   default: ({ env }) => ({
     outputLocation: env("GEN_TYPES_OUTPUT_LOCATION", "src/genTypes"),
     singleFile: env("GEN_TYPES_SINGLE_FILE", false),
+    prettier: {
+      singleQuote: env("GEN_TYPES_SINGLE_QUOTE", true),
+    },
   }),
   validator(config: GenTypesConfig) {
     if (!config.outputLocation) {
