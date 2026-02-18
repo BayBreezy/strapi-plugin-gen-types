@@ -291,9 +291,9 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
     outPath: string,
     singleFile: boolean,
     singleQuote: boolean = true,
-    clearOutput: boolean = false,
     include?: string[] | string,
-    exclude?: string[] | string
+    exclude?: string[] | string,
+    clearOutput: boolean = false
   ) => {
     const apiDir = `${process.cwd()}/src/api`;
     const componentsDir = `${process.cwd()}/src/components`;
