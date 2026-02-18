@@ -7,11 +7,11 @@
     "strapi-plugin",
     "generate-strapi-types"
   ],
+  "homepage": "https://github.com/BayBreezy/strapi-plugin-gen-types.git",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/BayBreezy/strapi-plugin-gen-types.git"
   },
-  "homepage": "https://github.com/BayBreezy/strapi-plugin-gen-types.git",
   "license": "MIT",
   "author": {
     "name": "Behon Baker",
@@ -45,33 +45,33 @@
     "format": "npx prettier --write .",
     "format:check": "npx prettier -c .",
     "release": "npm run format && npm run build && npm run verify && changelogen --release && npm publish && git push --follow-tags",
-    "test:ts:back": "run -T tsc -p server/tsconfig.json",
-    "test:ts:front": "run -T tsc -p admin/tsconfig.json",
+    "test:ts:back": "npx tsc -p server/tsconfig.json --noEmit",
+    "test:ts:front": "npx tsc -p admin/tsconfig.json --noEmit",
     "verify": "strapi-plugin verify",
     "watch": "strapi-plugin watch",
     "watch:link": "strapi-plugin watch:link"
   },
   "dependencies": {
-    "@strapi/design-system": "^2.0.0-rc.16",
-    "@strapi/icons": "^2.0.0-rc.16",
-    "destr": "^2.0.3",
+    "@strapi/design-system": "^2.1.2",
+    "@strapi/icons": "^2.1.2",
+    "destr": "^2.0.5",
     "react-intl": "^7.1.6",
-    "react-syntax-highlighter": "^15.6.1"
+    "react-syntax-highlighter": "^16.1.0"
   },
   "devDependencies": {
-    "@strapi/sdk-plugin": "^5.3.1",
-    "@strapi/strapi": "^5.10.2",
-    "@strapi/typescript-utils": "^5.10.2",
-    "@types/react": "^18.3.18",
-    "@types/react-dom": "^18.3.5",
+    "@strapi/sdk-plugin": "^5.4.0",
+    "@strapi/strapi": "^5.36.0",
+    "@strapi/typescript-utils": "^5.36.0",
+    "@types/react": "^18.3.28",
+    "@types/react-dom": "^18.3.7",
     "@types/react-syntax-highlighter": "^15.5.13",
-    "changelogen": "^0.5.7",
-    "prettier": "^3.5.1",
+    "changelogen": "^0.6.2",
+    "prettier": "^3.8.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.29.0",
-    "styled-components": "^6.1.15",
-    "typescript": "^5.7.3"
+    "react-router-dom": "^6.30.3",
+    "styled-components": "^6.3.9",
+    "typescript": "^5.9.3"
   },
   "peerDependencies": {
     "@strapi/sdk-plugin": "^5.2.6",
