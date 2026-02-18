@@ -1,5 +1,47 @@
 # Changelog
 
+## v0.0.16
+
+[compare changes](https://github.com/BayBreezy/strapi-plugin-gen-types/compare/v0.0.15...v0.0.16)
+
+### 🚀 Enhancements
+
+- Add optional parameter singleQuote to generate files with single/double quotes ([5f04338](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/5f04338))
+- Add optional parameter singleQuote to generate files with single/double quotes ([5e6f18b](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/5e6f18b))
+- Add optional parameter singleQuote to generate files with single/double quotes ([21e85fb](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/21e85fb))
+- Add include/exclude options for content type generation and update service logic ([33140cf](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/33140cf))
+- Add clearOutput option to remove output files before type generation ([a674ef2](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/a674ef2))
+- Add lint-staged configuration and pre-commit hook for automatic formatting ([1b14512](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/1b14512))
+- Add commitlint configuration for standardized commit messages ([0703789](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/0703789))
+- Add extendTypes option to allow custom properties in generated types ([41c262e](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/41c262e))
+- Add dashboard widget for type generation status and actions ([f5df8d9](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/f5df8d9))
+
+### 🩹 Fixes
+
+- Reorder parameters in generateInterfaces function for clarity ([feb6cee](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/feb6cee))
+- **release:** Add unit and TypeScript tests to release script ([ede7109](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/ede7109))
+
+### 💅 Refactors
+
+- Remove unused contentTypes, middlewares, and policies exports ([4993382](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/4993382))
+- Reorder log statements for improved clarity in plugin registration ([d87a514](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/d87a514))
+- Remove unused auth property from route configuration ([d161d90](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/d161d90))
+- Enhance interface generation by consolidating declared models and filtering unresolved imports ([1b6a0f8](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/1b6a0f8))
+- Restructure route configuration to include admin type and improve organization ([e22c9dd](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/e22c9dd))
+- Avoid self-imports in generated TypeScript interfaces ([4b5646b](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/4b5646b))
+
+### 🏡 Chore
+
+- Remove log statement ([2b81a97](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/2b81a97))
+- Update dependencies and devDependencies; fix homepage duplication in package.json ([2d6a28c](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/2d6a28c))
+- **test:** Add unit tests for gen-types service and configure Jest ([cf23a98](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/cf23a98))
+- Add issue and pull request templates for better contribution guidelines ([e247339](https://github.com/BayBreezy/strapi-plugin-gen-types/commit/e247339))
+
+### ❤️ Contributors
+
+- Behon Baker ([@BayBreezy](https://github.com/BayBreezy))
+- Alyssenko ([@AlexandrLyssenko](https://github.com/AlexandrLyssenko))
+
 ## v0.0.15
 
 [compare changes](https://github.com/BayBreezy/strapi-plugin-gen-types/compare/v0.0.14...v0.0.15)
