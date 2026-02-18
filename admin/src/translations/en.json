@@ -11,5 +11,13 @@
   "page.tooltip.interfaceFor": "Interface for",
   "page.tooltip.copyInterface": "Copy Interface",
   "page.copy.copyAll": "Copy All",
-  "page.copy.copyAll.tooltip": "Click to copy all types"
+  "page.copy.copyAll.tooltip": "Click to copy all types",
+  "widget.title": "Generated Types",
+  "widget.refresh": "Refresh",
+  "widget.regenerate": "Regenerate",
+  "widget.view": "View Types",
+  "widget.error.fetch": "Failed to fetch generation stats",
+  "widget.regenerate.success": "Types regenerated successfully",
+  "widget.regenerate.error": "Failed to regenerate types",
+  "widget.production.warning": "Type generation is disabled in production mode"
 }

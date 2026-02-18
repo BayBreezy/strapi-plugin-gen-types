@@ -99,6 +99,24 @@ export default ({ env }) => ({
 
 This will extend the generated interfaces with your custom properties while keeping all the default Strapi fields.
 
+## Dashboard Widget
+
+The plugin adds a convenient dashboard widget to the Strapi admin home page (development only) that displays:
+
+- ✓ Generation status (success/failed/never-run)
+- ✓ Last generation timestamp
+- ✓ Total types count (APIs + Components)
+- ✓ Output location
+- ✓ Active filters indicator
+- ✓ Extended types indicator
+
+**Quick Actions:**
+
+- 🔄 **Regenerate**: Manually trigger type generation without restarting Strapi
+- 👁️ **View Types**: Navigate to the full types viewer page
+
+This widget helps you monitor type generation status during development and quickly regenerate types when you make schema changes.
+
 ## Admin UI
 
 The plugin will add a new menu item `Generated Types`. This page will show the generated interfaces.

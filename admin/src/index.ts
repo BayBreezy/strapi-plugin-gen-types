@@ -6,6 +6,22 @@ import { PERMISSIONS } from "./permissions";
 
 export default {
   register(app: any) {
+    // Register dashboard widget
+    if ("widgets" in app) {
+      app.widgets.register({
+        icon: PluginIcon,
+        title: {
+          id: `${PLUGIN_ID}.widget.title`,
+          defaultMessage: "Generated Types",
+        },
+        name: "gen-types-widget",
+        component: async () => import("./components/GenTypesWidget").then((mod) => mod.GenTypesWidget),
+        id: "gen-types-widget",
+        pluginId: PLUGIN_ID,
+        permissions: PERMISSIONS["menu-link"],
+      });
+    }
+
     app.addMenuLink({
       to: `plugins/${PLUGIN_ID}`,
       icon: PluginIcon,

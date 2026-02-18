@@ -1,25 +1,20 @@
 import type { Core } from "@strapi/strapi";
+import { destr } from "destr";
 import fs from "fs";
-import path from "path";
 import _ from "lodash";
-import { pluginName } from "../genTypes/types";
-import { StrapiAttribute, StrapiSchema } from "../genTypes/types";
+import micromatch from "micromatch";
+import path from "path";
+import type { GenTypesConfig } from "../config";
 import {
-  findManyPayload,
-  findOnePayload,
-  mediaFields,
-  metaFields,
-  roleFields,
-  userFields,
-  buildUserFields,
-  buildRoleFields,
+  buildFindManyPayload,
+  buildFindOnePayload,
   buildMediaFields,
   buildMediaFormatFields,
-  buildFindOnePayload,
-  buildFindManyPayload,
+  buildRoleFields,
+  buildUserFields,
+  metaFields,
 } from "../genTypes/constants";
-import { destr } from "destr";
-import micromatch from "micromatch";
+import { pluginName, StrapiAttribute, StrapiSchema } from "../genTypes/types";
 
 const constructImportLine = (model: string, quote: "'" | '"') =>
   `import { ${model} } from ${quote}./${_.camelCase(model)}${quote};`;
@@ -70,6 +65,13 @@ const matchesFilters = (uid: string, include?: string[] | string, exclude?: stri
 
 const shouldIncludeUid = (uid: string, include?: string[] | string, exclude?: string[] | string): boolean =>
   matchesFilters(uid, include, exclude);
+
+// In-memory stats tracker
+let generationStats = {
+  lastGenerated: undefined as string | undefined,
+  status: "never-run" as "success" | "error" | "never-run",
+  errorMessage: undefined as string | undefined,
+};
 
 const service = ({ strapi }: { strapi: Core.Strapi }) => ({
   /**
@@ -327,159 +329,233 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
       FindMany?: string;
     }
   ) => {
+    try {
+      const apiDir = `${process.cwd()}/src/api`;
+      const componentsDir = `${process.cwd()}/src/components`;
+      const quoteSymbol = singleQuote ? `'` : `"`;
+      if (clearOutput) {
+        if (fs.existsSync(outPath)) {
+          const stat = fs.statSync(outPath);
+          if (stat.isDirectory()) {
+            fs.rmSync(outPath, { recursive: true, force: true });
+          } else {
+            fs.rmSync(outPath, { force: true });
+          }
+        }
+      }
+
+      let schemaFiles = [];
+      if (fs.existsSync(apiDir))
+        schemaFiles = strapi.service(`plugin::${pluginName}.service`).walkDirectory(apiDir);
+      let componentSchemaFiles = [];
+      if (fs.existsSync(componentsDir))
+        componentSchemaFiles = strapi.service(`plugin::${pluginName}.service`).walkDirectory(componentsDir);
+
+      schemaFiles = schemaFiles.filter((schemaFile) =>
+        matchesFilters(getApiUidFromSchemaFile(schemaFile), include, exclude)
+      );
+      componentSchemaFiles = componentSchemaFiles.filter((schemaFile) =>
+        matchesFilters(getComponentUidFromSchemaFile(schemaFile), include, exclude)
+      );
+
+      let consolidatedInterfaces = "";
+      let consolidatedImports: Set<string> = new Set();
+      let consolidatedDeclaredModels: Set<string> = new Set();
+
+      componentSchemaFiles.forEach((schemaFile) => {
+        const schemaJson = fs.readFileSync(schemaFile, "utf-8");
+        const schema: StrapiSchema = destr(schemaJson);
+        const modelName = `${path.basename(path.dirname(schemaFile))}.${path.parse(schemaFile).name}`; // Use parent folder + file name as model name
+
+        // Generate the TypeScript interface
+        const { interfaceString, imports } = strapi
+          .service(`plugin::${pluginName}.service`)
+          .generateInterfaceFromSchema(modelName, schema, true, include, exclude);
+        const declaredModel = _.upperFirst(_.camelCase(modelName));
+
+        if (singleFile) {
+          // Consolidate interfaces and collect unique imports
+          consolidatedInterfaces += `\n${interfaceString}`;
+          imports.forEach((importedModel) => consolidatedImports.add(importedModel));
+          consolidatedDeclaredModels.add(declaredModel);
+        } else {
+          // Ensure output directory exists
+          if (!fs.existsSync(outPath)) {
+            fs.mkdirSync(outPath);
+          }
+          // Save the interface to a TypeScript file
+          const outputFilePath = path.resolve(outPath, `${_.camelCase(modelName)}.ts`);
+
+          // Generate imports for the interface (avoid self-imports)
+          const importStatements = imports
+            .filter((model) => model !== declaredModel)
+            .map((model) => constructImportLine(model, quoteSymbol))
+            .join("\n");
+
+          const fileContent = `${importStatements}\n\n${interfaceString}`;
+          fs.writeFileSync(outputFilePath, fileContent);
+          strapi.log.info(`Generated interface for ${modelName} at ${outputFilePath}`);
+        }
+      });
+
+      schemaFiles.forEach((schemaFile) => {
+        const schemaJson = fs.readFileSync(schemaFile, "utf-8");
+        const schema: StrapiSchema = destr(schemaJson);
+        const modelName = path.basename(path.dirname(schemaFile)); // Use parent folder name as model name
+
+        // Generate the TypeScript interface
+        const { interfaceString, imports } = strapi
+          .service(`plugin::${pluginName}.service`)
+          .generateInterfaceFromSchema(modelName, schema, false, include, exclude);
+        const declaredModel = _.upperFirst(_.camelCase(modelName));
+
+        if (singleFile) {
+          // Consolidate interfaces and collect unique imports
+          consolidatedInterfaces += `\n${interfaceString}`;
+          imports.forEach((importedModel) => consolidatedImports.add(importedModel));
+          consolidatedDeclaredModels.add(declaredModel);
+        } else {
+          // Ensure output directory exists
+          if (!fs.existsSync(outPath)) {
+            fs.mkdirSync(outPath);
+          }
+          // Save the interface to a TypeScript file
+          const outputFilePath = path.resolve(outPath, `${_.camelCase(modelName)}.ts`);
+
+          // Generate imports for the interface (avoid self-imports)
+          const importStatements = imports
+            .filter((model) => model !== declaredModel)
+            .map((model) => constructImportLine(model, quoteSymbol))
+            .join("\n");
+
+          const fileContent = `${importStatements}\n\n${interfaceString}`;
+          fs.writeFileSync(outputFilePath, fileContent);
+          strapi.log.info(`Generated interface for ${modelName} at ${outputFilePath}`);
+        }
+      });
+
+      if (singleFile) {
+        // Add mediaFields, userFields, roleFields, findOnePayload, and findManyPayload to the consolidated
+        // interfaces file with custom fields
+        const mediaFieldsWithCustom =
+          buildMediaFields(extendTypes?.Media) + "\n" + buildMediaFormatFields(extendTypes?.MediaFormat);
+        const userFieldsWithCustom = buildUserFields(extendTypes?.User);
+        const roleFieldsWithCustom = buildRoleFields(extendTypes?.Role);
+        const findOnePayloadWithCustom = buildFindOnePayload(extendTypes?.FindOne);
+        const findManyPayloadWithCustom = buildFindManyPayload(extendTypes?.FindMany);
+
+        consolidatedInterfaces += `\n${mediaFieldsWithCustom}\n${userFieldsWithCustom}\n${roleFieldsWithCustom}\n${findOnePayloadWithCustom}\n${findManyPayloadWithCustom}`;
+
+        const builtInDeclaredModels = new Set([
+          "Media",
+          "MediaFormat",
+          "User",
+          "Role",
+          "FindOne",
+          "FindMany",
+        ]);
+
+        // Generate import statements for unresolved references only.
+        // Do not import models that are declared in the same consolidated file.
+        const importStatements = Array.from(consolidatedImports)
+          .filter((model) => !consolidatedDeclaredModels.has(model) && !builtInDeclaredModels.has(model))
+          .map((model) => constructImportLine(model, quoteSymbol))
+          .join("\n");
+
+        const finalContent = importStatements
+          ? `${importStatements}\n\n${consolidatedInterfaces}`
+          : consolidatedInterfaces;
+        fs.writeFileSync(outPath, finalContent);
+        strapi.log.info(`Generated consolidated interfaces at ${outPath}`);
+      }
+      if (!singleFile) {
+        // ensure outPath exists
+        if (!fs.existsSync(outPath)) {
+          fs.mkdirSync(outPath);
+        }
+        // Create the files for userFields, roleFields, findOnePayload, and findManyPayload with custom fields
+        // Add role import to userFields
+        const roleImport = constructImportLine("Role", quoteSymbol) + "\n";
+
+        const userFieldsWithCustom = buildUserFields(extendTypes?.User);
+        const roleFieldsWithCustom = buildRoleFields(extendTypes?.Role);
+        const mediaFieldsWithCustom =
+          buildMediaFields(extendTypes?.Media) + "\n" + buildMediaFormatFields(extendTypes?.MediaFormat);
+        const findOnePayloadWithCustom = buildFindOnePayload(extendTypes?.FindOne);
+        const findManyPayloadWithCustom = buildFindManyPayload(extendTypes?.FindMany);
+
+        fs.writeFileSync(path.resolve(outPath, "user.ts"), roleImport + userFieldsWithCustom);
+        fs.writeFileSync(path.resolve(outPath, "role.ts"), roleFieldsWithCustom);
+        fs.writeFileSync(path.resolve(outPath, "media.ts"), mediaFieldsWithCustom);
+        fs.writeFileSync(path.resolve(outPath, "findOnePayload.ts"), findOnePayloadWithCustom);
+        fs.writeFileSync(path.resolve(outPath, "findManyPayload.ts"), findManyPayloadWithCustom);
+      }
+
+      // Update generation stats on success
+      generationStats = {
+        lastGenerated: new Date().toISOString(),
+        status: "success",
+        errorMessage: undefined,
+      };
+    } catch (error: any) {
+      // Update generation stats on error
+      generationStats = {
+        lastGenerated: new Date().toISOString(),
+        status: "error",
+        errorMessage: error.message || "Unknown error during type generation",
+      };
+      strapi.log.error("Failed to generate types:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get generation statistics for the dashboard widget
+   */
+  getGenerationStats: () => {
+    const config: GenTypesConfig = strapi.config.get("plugin::gen-types");
     const apiDir = `${process.cwd()}/src/api`;
     const componentsDir = `${process.cwd()}/src/components`;
-    const quoteSymbol = singleQuote ? `'` : `"`;
-    if (clearOutput) {
-      if (fs.existsSync(outPath)) {
-        const stat = fs.statSync(outPath);
-        if (stat.isDirectory()) {
-          fs.rmSync(outPath, { recursive: true, force: true });
-        } else {
-          fs.rmSync(outPath, { force: true });
-        }
+
+    let apiCount = 0;
+    let componentCount = 0;
+
+    try {
+      if (fs.existsSync(apiDir)) {
+        const apiFiles = strapi.service(`plugin::${pluginName}.service`).walkDirectory(apiDir);
+        apiCount = apiFiles.filter((file) =>
+          matchesFilters(getApiUidFromSchemaFile(file), config?.include, config?.exclude)
+        ).length;
       }
+
+      if (fs.existsSync(componentsDir)) {
+        const componentFiles = strapi.service(`plugin::${pluginName}.service`).walkDirectory(componentsDir);
+        componentCount = componentFiles.filter((file) =>
+          matchesFilters(getComponentUidFromSchemaFile(file), config?.include, config?.exclude)
+        ).length;
+      }
+    } catch (error) {
+      strapi.log.error("Error counting types:", error);
     }
 
-    let schemaFiles = [];
-    if (fs.existsSync(apiDir))
-      schemaFiles = strapi.service(`plugin::${pluginName}.service`).walkDirectory(apiDir);
-    let componentSchemaFiles = [];
-    if (fs.existsSync(componentsDir))
-      componentSchemaFiles = strapi.service(`plugin::${pluginName}.service`).walkDirectory(componentsDir);
+    const hasFilters =
+      (config?.include && config.include.length > 0) || (config?.exclude && config.exclude.length > 0);
 
-    schemaFiles = schemaFiles.filter((schemaFile) =>
-      matchesFilters(getApiUidFromSchemaFile(schemaFile), include, exclude)
-    );
-    componentSchemaFiles = componentSchemaFiles.filter((schemaFile) =>
-      matchesFilters(getComponentUidFromSchemaFile(schemaFile), include, exclude)
-    );
+    const hasExtendedTypes = config?.extendTypes && Object.keys(config.extendTypes).length > 0;
 
-    let consolidatedInterfaces = "";
-    let consolidatedImports: Set<string> = new Set();
-    let consolidatedDeclaredModels: Set<string> = new Set();
-
-    componentSchemaFiles.forEach((schemaFile) => {
-      const schemaJson = fs.readFileSync(schemaFile, "utf-8");
-      const schema: StrapiSchema = destr(schemaJson);
-      const modelName = `${path.basename(path.dirname(schemaFile))}.${path.parse(schemaFile).name}`; // Use parent folder + file name as model name
-
-      // Generate the TypeScript interface
-      const { interfaceString, imports } = strapi
-        .service(`plugin::${pluginName}.service`)
-        .generateInterfaceFromSchema(modelName, schema, true, include, exclude);
-      const declaredModel = _.upperFirst(_.camelCase(modelName));
-
-      if (singleFile) {
-        // Consolidate interfaces and collect unique imports
-        consolidatedInterfaces += `\n${interfaceString}`;
-        imports.forEach((importedModel) => consolidatedImports.add(importedModel));
-        consolidatedDeclaredModels.add(declaredModel);
-      } else {
-        // Ensure output directory exists
-        if (!fs.existsSync(outPath)) {
-          fs.mkdirSync(outPath);
-        }
-        // Save the interface to a TypeScript file
-        const outputFilePath = path.resolve(outPath, `${_.camelCase(modelName)}.ts`);
-
-        // Generate imports for the interface (avoid self-imports)
-        const importStatements = imports
-          .filter((model) => model !== declaredModel)
-          .map((model) => constructImportLine(model, quoteSymbol))
-          .join("\n");
-
-        const fileContent = `${importStatements}\n\n${interfaceString}`;
-        fs.writeFileSync(outputFilePath, fileContent);
-        strapi.log.info(`Generated interface for ${modelName} at ${outputFilePath}`);
-      }
-    });
-
-    schemaFiles.forEach((schemaFile) => {
-      const schemaJson = fs.readFileSync(schemaFile, "utf-8");
-      const schema: StrapiSchema = destr(schemaJson);
-      const modelName = path.basename(path.dirname(schemaFile)); // Use parent folder name as model name
-
-      // Generate the TypeScript interface
-      const { interfaceString, imports } = strapi
-        .service(`plugin::${pluginName}.service`)
-        .generateInterfaceFromSchema(modelName, schema, false, include, exclude);
-      const declaredModel = _.upperFirst(_.camelCase(modelName));
-
-      if (singleFile) {
-        // Consolidate interfaces and collect unique imports
-        consolidatedInterfaces += `\n${interfaceString}`;
-        imports.forEach((importedModel) => consolidatedImports.add(importedModel));
-        consolidatedDeclaredModels.add(declaredModel);
-      } else {
-        // Ensure output directory exists
-        if (!fs.existsSync(outPath)) {
-          fs.mkdirSync(outPath);
-        }
-        // Save the interface to a TypeScript file
-        const outputFilePath = path.resolve(outPath, `${_.camelCase(modelName)}.ts`);
-
-        // Generate imports for the interface (avoid self-imports)
-        const importStatements = imports
-          .filter((model) => model !== declaredModel)
-          .map((model) => constructImportLine(model, quoteSymbol))
-          .join("\n");
-
-        const fileContent = `${importStatements}\n\n${interfaceString}`;
-        fs.writeFileSync(outputFilePath, fileContent);
-        strapi.log.info(`Generated interface for ${modelName} at ${outputFilePath}`);
-      }
-    });
-
-    if (singleFile) {
-      // Add mediaFields, userFields, roleFields, findOnePayload, and findManyPayload to the consolidated
-      // interfaces file with custom fields
-      const mediaFieldsWithCustom =
-        buildMediaFields(extendTypes?.Media) + "\n" + buildMediaFormatFields(extendTypes?.MediaFormat);
-      const userFieldsWithCustom = buildUserFields(extendTypes?.User);
-      const roleFieldsWithCustom = buildRoleFields(extendTypes?.Role);
-      const findOnePayloadWithCustom = buildFindOnePayload(extendTypes?.FindOne);
-      const findManyPayloadWithCustom = buildFindManyPayload(extendTypes?.FindMany);
-
-      consolidatedInterfaces += `\n${mediaFieldsWithCustom}\n${userFieldsWithCustom}\n${roleFieldsWithCustom}\n${findOnePayloadWithCustom}\n${findManyPayloadWithCustom}`;
-
-      const builtInDeclaredModels = new Set(["Media", "MediaFormat", "User", "Role", "FindOne", "FindMany"]);
-
-      // Generate import statements for unresolved references only.
-      // Do not import models that are declared in the same consolidated file.
-      const importStatements = Array.from(consolidatedImports)
-        .filter((model) => !consolidatedDeclaredModels.has(model) && !builtInDeclaredModels.has(model))
-        .map((model) => constructImportLine(model, quoteSymbol))
-        .join("\n");
-
-      const finalContent = importStatements
-        ? `${importStatements}\n\n${consolidatedInterfaces}`
-        : consolidatedInterfaces;
-      fs.writeFileSync(outPath, finalContent);
-      strapi.log.info(`Generated consolidated interfaces at ${outPath}`);
-    }
-    if (!singleFile) {
-      // ensure outPath exists
-      if (!fs.existsSync(outPath)) {
-        fs.mkdirSync(outPath);
-      }
-      // Create the files for userFields, roleFields, findOnePayload, and findManyPayload with custom fields
-      // Add role import to userFields
-      const roleImport = constructImportLine("Role", quoteSymbol) + "\n";
-
-      const userFieldsWithCustom = buildUserFields(extendTypes?.User);
-      const roleFieldsWithCustom = buildRoleFields(extendTypes?.Role);
-      const mediaFieldsWithCustom =
-        buildMediaFields(extendTypes?.Media) + "\n" + buildMediaFormatFields(extendTypes?.MediaFormat);
-      const findOnePayloadWithCustom = buildFindOnePayload(extendTypes?.FindOne);
-      const findManyPayloadWithCustom = buildFindManyPayload(extendTypes?.FindMany);
-
-      fs.writeFileSync(path.resolve(outPath, "user.ts"), roleImport + userFieldsWithCustom);
-      fs.writeFileSync(path.resolve(outPath, "role.ts"), roleFieldsWithCustom);
-      fs.writeFileSync(path.resolve(outPath, "media.ts"), mediaFieldsWithCustom);
-      fs.writeFileSync(path.resolve(outPath, "findOnePayload.ts"), findOnePayloadWithCustom);
-      fs.writeFileSync(path.resolve(outPath, "findManyPayload.ts"), findManyPayloadWithCustom);
-    }
+    return {
+      lastGenerated: generationStats.lastGenerated,
+      status: generationStats.status,
+      errorMessage: generationStats.errorMessage,
+      totalTypes: apiCount + componentCount,
+      apiTypes: apiCount,
+      componentTypes: componentCount,
+      outputLocation: config?.outputLocation || "src/genTypes",
+      singleFile: config?.singleFile || false,
+      hasFilters,
+      hasExtendedTypes,
+      isProduction: process.env.NODE_ENV === "production",
+    };
   },
 });
 
