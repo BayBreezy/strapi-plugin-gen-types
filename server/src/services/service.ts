@@ -11,6 +11,12 @@ import {
   metaFields,
   roleFields,
   userFields,
+  buildUserFields,
+  buildRoleFields,
+  buildMediaFields,
+  buildMediaFormatFields,
+  buildFindOnePayload,
+  buildFindManyPayload,
 } from "../genTypes/constants";
 import { destr } from "destr";
 import micromatch from "micromatch";
@@ -225,7 +231,18 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
 
     return { interfaceString, imports };
   },
-  generateInterfaceStrings: (include?: string[] | string, exclude?: string[] | string) => {
+  generateInterfaceStrings: (
+    include?: string[] | string,
+    exclude?: string[] | string,
+    extendTypes?: {
+      User?: string;
+      Role?: string;
+      Media?: string;
+      MediaFormat?: string;
+      FindOne?: string;
+      FindMany?: string;
+    }
+  ) => {
     const apiDir = `${process.cwd()}/src/api`;
     const componentsDir = `${process.cwd()}/src/components`;
 
@@ -274,12 +291,19 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
       // add to holding array
       holdingArray.set(recordTitle, interfaceString);
     });
-    // Add other interfaces to the holding array
-    holdingArray.set("Media", mediaFields);
-    holdingArray.set("User", userFields);
-    holdingArray.set("Role", roleFields);
-    holdingArray.set("FindOnePayload", findOnePayload);
-    holdingArray.set("FindManyPayload", findManyPayload);
+    // Add other interfaces to the holding array with custom fields
+    const mediaFieldsWithCustom =
+      buildMediaFields(extendTypes?.Media) + "\n" + buildMediaFormatFields(extendTypes?.MediaFormat);
+    const userFieldsWithCustom = buildUserFields(extendTypes?.User);
+    const roleFieldsWithCustom = buildRoleFields(extendTypes?.Role);
+    const findOnePayloadWithCustom = buildFindOnePayload(extendTypes?.FindOne);
+    const findManyPayloadWithCustom = buildFindManyPayload(extendTypes?.FindMany);
+
+    holdingArray.set("Media", mediaFieldsWithCustom);
+    holdingArray.set("User", userFieldsWithCustom);
+    holdingArray.set("Role", roleFieldsWithCustom);
+    holdingArray.set("FindOnePayload", findOnePayloadWithCustom);
+    holdingArray.set("FindManyPayload", findManyPayloadWithCustom);
 
     // return the map as an array
     return Object.fromEntries(holdingArray);
@@ -291,9 +315,17 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
     outPath: string,
     singleFile: boolean,
     singleQuote: boolean = true,
+    clearOutput: boolean = false,
     include?: string[] | string,
     exclude?: string[] | string,
-    clearOutput: boolean = false
+    extendTypes?: {
+      User?: string;
+      Role?: string;
+      Media?: string;
+      MediaFormat?: string;
+      FindOne?: string;
+      FindMany?: string;
+    }
   ) => {
     const apiDir = `${process.cwd()}/src/api`;
     const componentsDir = `${process.cwd()}/src/components`;
@@ -401,8 +433,15 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
 
     if (singleFile) {
       // Add mediaFields, userFields, roleFields, findOnePayload, and findManyPayload to the consolidated
-      // interfaces file
-      consolidatedInterfaces += `\n${mediaFields}\n${userFields}\n${roleFields}\n${findOnePayload}\n${findManyPayload}`;
+      // interfaces file with custom fields
+      const mediaFieldsWithCustom =
+        buildMediaFields(extendTypes?.Media) + "\n" + buildMediaFormatFields(extendTypes?.MediaFormat);
+      const userFieldsWithCustom = buildUserFields(extendTypes?.User);
+      const roleFieldsWithCustom = buildRoleFields(extendTypes?.Role);
+      const findOnePayloadWithCustom = buildFindOnePayload(extendTypes?.FindOne);
+      const findManyPayloadWithCustom = buildFindManyPayload(extendTypes?.FindMany);
+
+      consolidatedInterfaces += `\n${mediaFieldsWithCustom}\n${userFieldsWithCustom}\n${roleFieldsWithCustom}\n${findOnePayloadWithCustom}\n${findManyPayloadWithCustom}`;
 
       const builtInDeclaredModels = new Set(["Media", "MediaFormat", "User", "Role", "FindOne", "FindMany"]);
 
@@ -424,15 +463,22 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
       if (!fs.existsSync(outPath)) {
         fs.mkdirSync(outPath);
       }
-      // Create the files for userFields, roleFields, findOnePayload, and findManyPayload
+      // Create the files for userFields, roleFields, findOnePayload, and findManyPayload with custom fields
       // Add role import to userFields
       const roleImport = constructImportLine("Role", quoteSymbol) + "\n";
 
-      fs.writeFileSync(path.resolve(outPath, "user.ts"), roleImport + userFields);
-      fs.writeFileSync(path.resolve(outPath, "role.ts"), roleFields);
-      fs.writeFileSync(path.resolve(outPath, "media.ts"), mediaFields);
-      fs.writeFileSync(path.resolve(outPath, "findOnePayload.ts"), findOnePayload);
-      fs.writeFileSync(path.resolve(outPath, "findManyPayload.ts"), findManyPayload);
+      const userFieldsWithCustom = buildUserFields(extendTypes?.User);
+      const roleFieldsWithCustom = buildRoleFields(extendTypes?.Role);
+      const mediaFieldsWithCustom =
+        buildMediaFields(extendTypes?.Media) + "\n" + buildMediaFormatFields(extendTypes?.MediaFormat);
+      const findOnePayloadWithCustom = buildFindOnePayload(extendTypes?.FindOne);
+      const findManyPayloadWithCustom = buildFindManyPayload(extendTypes?.FindMany);
+
+      fs.writeFileSync(path.resolve(outPath, "user.ts"), roleImport + userFieldsWithCustom);
+      fs.writeFileSync(path.resolve(outPath, "role.ts"), roleFieldsWithCustom);
+      fs.writeFileSync(path.resolve(outPath, "media.ts"), mediaFieldsWithCustom);
+      fs.writeFileSync(path.resolve(outPath, "findOnePayload.ts"), findOnePayloadWithCustom);
+      fs.writeFileSync(path.resolve(outPath, "findManyPayload.ts"), findManyPayloadWithCustom);
     }
   },
 });

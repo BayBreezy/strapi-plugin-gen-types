@@ -13,7 +13,7 @@ export const metaFields = `
 /**
  * The shape of the default strapi user
  */
-export const userFields = `export interface User {
+export const buildUserFields = (customFields?: string): string => `export interface User {
   id?: number;
   username: string;
   email: string;
@@ -22,30 +22,32 @@ export const userFields = `export interface User {
   blocked?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
-  role: Role | null | number;
+  role: Role | null | number;${customFields ? `\n  ${customFields}` : ""}
 };
 `;
 
+export const userFields = buildUserFields();
+
 /**
  * The shape of the default strapi role
- *
- * For v4, the `documentId` field is not there
  */
-export const roleFields = `export interface Role {
+export const buildRoleFields = (customFields?: string): string => `export interface Role {
   id?: number;
   documentId?: string;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   name: string;
   description: string;
-  type: string;
+  type: string;${customFields ? `\n  ${customFields}` : ""}
 };
 `;
+
+export const roleFields = buildRoleFields();
 
 /**
  * The shape of the payload returned from a findOne query
  */
-export const findOnePayload = `export interface FindOne<T> {
+export const buildFindOnePayload = (customFields?: string): string => `export interface FindOne<T> {
   data: T;
   meta: {
     pagination?: {
@@ -53,15 +55,17 @@ export const findOnePayload = `export interface FindOne<T> {
       pageSize: number;
       pageCount: number;
       total: number;
-    }
-  };
+    };
+  };${customFields ? `\n  ${customFields}` : ""}
 };
 `;
+
+export const findOnePayload = buildFindOnePayload();
 
 /**
  * The shape of the payload returned from a findMany query
  */
-export const findManyPayload = `export interface FindMany<T> {
+export const buildFindManyPayload = (customFields?: string): string => `export interface FindMany<T> {
   data: T[];
   meta: {
     pagination?: {
@@ -69,12 +73,14 @@ export const findManyPayload = `export interface FindMany<T> {
       pageSize: number;
       pageCount: number;
       total: number;
-    }
-  };
+    };
+  };${customFields ? `\n  ${customFields}` : ""}
 };
 `;
 
-export const mediaFields = `export interface Media {
+export const findManyPayload = buildFindManyPayload();
+
+export const buildMediaFields = (customFields?: string): string => `export interface Media {
   id: number;
   name: string;
   alternativeText: string;
@@ -90,10 +96,11 @@ export const mediaFields = `export interface Media {
   previewUrl: string;
   provider: string;
   createdAt: Date;
-  updatedAt: Date;
+  updatedAt: Date;${customFields ? `\n  ${customFields}` : ""}
 }
+`;
 
-export interface MediaFormat {
+export const buildMediaFormatFields = (customFields?: string): string => `export interface MediaFormat {
   name: string;
   hash: string;
   ext: string;
@@ -102,6 +109,8 @@ export interface MediaFormat {
   height: number;
   size: number;
   path: string;
-  url: string;
+  url: string;${customFields ? `\n  ${customFields}` : ""}
 }
 `;
+
+export const mediaFields = buildMediaFields() + "\n" + buildMediaFormatFields();

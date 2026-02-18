@@ -288,7 +288,7 @@ describe("gen-types service", () => {
 
     const outPath = path.join(cwd, "genTypes");
 
-    service.generateInterfaces(outPath, false, true, ["api::vehicle.*"], []);
+    service.generateInterfaces(outPath, false, true, false, ["api::vehicle.*"], []);
 
     expect(fs.existsSync(path.join(outPath, "vehicle.ts"))).toBe(true);
     expect(fs.existsSync(path.join(outPath, "maintenanceRecord.ts"))).toBe(false);
@@ -343,7 +343,7 @@ describe("gen-types service", () => {
 
     const outPath = path.join(cwd, "genTypes");
 
-    service.generateInterfaces(outPath, false, true, [], ["component::fleet.service-record"]);
+    service.generateInterfaces(outPath, false, true, false, [], ["component::fleet.service-record"]);
 
     const vehicleFile = path.join(outPath, "vehicle.ts");
     const vehicleContent = fs.readFileSync(vehicleFile, "utf-8");
@@ -392,12 +392,65 @@ describe("gen-types service", () => {
 
     const outPath = path.join(cwd, "genTypes");
 
-    service.generateInterfaces(outPath, false, true, ["api::vehicle.*"], []);
+    service.generateInterfaces(outPath, false, true, false, ["api::vehicle.*"], []);
 
     const vehicleFile = path.join(outPath, "vehicle.ts");
     const vehicleContent = fs.readFileSync(vehicleFile, "utf-8");
 
     expect(vehicleContent).toContain("import { User }");
     expect(vehicleContent).toContain("owner?: User | null;");
+  });
+
+  it("extends built-in types with custom fields", () => {
+    const vehicleSchema = {
+      attributes: {
+        vin: { type: "string", required: true },
+        owner: {
+          type: "relation",
+          relation: "manyToOne",
+          target: "plugin::users-permissions.user",
+        },
+      },
+    };
+
+    const outFile = path.join(cwd, "genTypes", "types.ts");
+
+    mockFs({
+      [path.join(cwd, "src")]: {
+        api: {
+          vehicle: {
+            "schema.json": JSON.stringify(vehicleSchema),
+          },
+        },
+      },
+      [path.join(cwd, "genTypes")]: {},
+    });
+
+    const strapi = {
+      service: jest.fn(),
+      log: { info: jest.fn() },
+    } as any;
+
+    const service = serviceFactory({ strapi });
+
+    strapi.service.mockImplementation((name: string) => {
+      if (name === `plugin::${pluginName}.service`) {
+        return service;
+      }
+      throw new Error(`Unknown service ${name}`);
+    });
+
+    service.generateInterfaces(outFile, true, true, false, [], [], {
+      User: "firstName?: string;\nlastName?: string;",
+      Role: "customField?: boolean;",
+    });
+
+    const content = fs.readFileSync(outFile, "utf-8");
+
+    expect(content).toContain("export interface User");
+    expect(content).toContain("firstName?: string;");
+    expect(content).toContain("lastName?: string;");
+    expect(content).toContain("export interface Role");
+    expect(content).toContain("customField?: boolean;");
   });
 });

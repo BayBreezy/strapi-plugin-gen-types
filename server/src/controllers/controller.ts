@@ -8,7 +8,7 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
     const res = strapi
       .plugin(pluginName)
       .service("service")
-      .generateInterfaceStrings(config?.include, config?.exclude);
+      .generateInterfaceStrings(config?.include, config?.exclude, config?.extendTypes);
     return res;
   },
 });

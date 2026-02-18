@@ -31,6 +31,7 @@ The following options are available:
 - `include` - Glob patterns to include content types/components. Matches `api::name.name` and `component::category.name`
 - `exclude` - Glob patterns to exclude content types/components. Matches `api::name.name` and `component::category.name`
 - `clearOutput` - Remove the output file/folder before generating types. Default: `false`
+- `extendTypes` - Add custom properties to built-in types. Accepts an object with keys: `User`, `Role`, `Media`, `MediaFormat`, `FindOne`, `FindMany`. Values should be TypeScript property definitions as strings.
 
 When a referenced type is excluded, the attribute will be typed as `any` and no import is generated.
 Core Strapi types (`User`, `Role`) are always kept unless you explicitly exclude their UIDs.
@@ -47,6 +48,14 @@ export default ({ env }) => ({
       clearOutput: true,
       include: ["api::blog.*", "component::shared.*"],
       exclude: ["api::internal.*"],
+      // Extend built-in types with custom properties
+      extendTypes: {
+        User: "firstName?: string;\nlastName?: string;\nage?: number;",
+        Role: "permissions?: string[];",
+        Media: "uploadedBy?: number;",
+        FindOne: "requestId?: string;",
+        FindMany: "requestId?: string;",
+      },
     },
   },
 });
@@ -55,6 +64,40 @@ export default ({ env }) => ({
 The plugin will generate types for the collections found in the `api` folder of your Strapi project.
 
 It will also add a few extra interfaces like `User`, `Role`, `Media` etc.
+
+### Extending Built-in Types
+
+You can add custom properties to the built-in types using the `extendTypes` config option. This is useful when you've added custom fields to your User model or want to add metadata to API responses.
+
+```typescript
+// config/plugins.ts
+export default ({ env }) => ({
+  "gen-types": {
+    enabled: true,
+    config: {
+      extendTypes: {
+        // Add custom fields to User interface
+        User: `firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;`,
+        // Add custom fields to Role interface
+        Role: `permissions?: string[];
+  level?: number;`,
+        // Add custom metadata to Media interface
+        Media: `uploadedBy?: number;
+  folder?: string;`,
+        // Add custom fields to FindOne/FindMany meta
+        FindOne: `requestId?: string;
+  timestamp?: Date;`,
+        FindMany: `requestId?: string;
+  timestamp?: Date;`,
+      },
+    },
+  },
+});
+```
+
+This will extend the generated interfaces with your custom properties while keeping all the default Strapi fields.
 
 ## Admin UI
 

@@ -15,7 +15,8 @@ const register = ({ strapi }: { strapi: Core.Strapi }) => {
         config?.prettier?.singleQuote,
         config?.clearOutput,
         config?.include,
-        config?.exclude
+        config?.exclude,
+        config?.extendTypes
       );
     strapi.log.info("Gen Types Plugin registered");
   }

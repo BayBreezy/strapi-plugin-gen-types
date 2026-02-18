@@ -35,6 +35,23 @@ export type GenTypesConfig = {
    */
   exclude?: string[];
   /**
+   * Extend built-in types with custom properties
+   *
+   * @example
+   * extendTypes: {
+   *   User: 'firstName?: string;\nlastName?: string;',
+   *   Role: 'customField?: boolean;'
+   * }
+   */
+  extendTypes?: {
+    User?: string;
+    Role?: string;
+    Media?: string;
+    MediaFormat?: string;
+    FindOne?: string;
+    FindMany?: string;
+  };
+  /**
    * Formatting options for generated files
    */
   prettier?: {
@@ -54,6 +71,7 @@ export default {
     clearOutput: env("GEN_TYPES_CLEAR_OUTPUT", false),
     include: env("GEN_TYPES_INCLUDE", []),
     exclude: env("GEN_TYPES_EXCLUDE", []),
+    extendTypes: {},
     prettier: {
       singleQuote: env("GEN_TYPES_SINGLE_QUOTE", true),
     },
