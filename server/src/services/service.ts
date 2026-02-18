@@ -247,8 +247,11 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
         // Save the interface to a TypeScript file
         const outputFilePath = path.resolve(outPath, `${_.camelCase(modelName)}.ts`);
 
-        // Generate imports for the interface
-        const importStatements = imports.map((model) => constructImportLine(model, quoteSymbol)).join("\n");
+        // Generate imports for the interface (avoid self-imports)
+        const importStatements = imports
+          .filter((model) => model !== declaredModel)
+          .map((model) => constructImportLine(model, quoteSymbol))
+          .join("\n");
 
         const fileContent = `${importStatements}\n\n${interfaceString}`;
         fs.writeFileSync(outputFilePath, fileContent);
@@ -280,8 +283,11 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
         // Save the interface to a TypeScript file
         const outputFilePath = path.resolve(outPath, `${_.camelCase(modelName)}.ts`);
 
-        // Generate imports for the interface
-        const importStatements = imports.map((model) => constructImportLine(model, quoteSymbol)).join("\n");
+        // Generate imports for the interface (avoid self-imports)
+        const importStatements = imports
+          .filter((model) => model !== declaredModel)
+          .map((model) => constructImportLine(model, quoteSymbol))
+          .join("\n");
 
         const fileContent = `${importStatements}\n\n${interfaceString}`;
         fs.writeFileSync(outputFilePath, fileContent);
@@ -294,21 +300,12 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
       // interfaces file
       consolidatedInterfaces += `\n${mediaFields}\n${userFields}\n${roleFields}\n${findOnePayload}\n${findManyPayload}`;
 
-      const builtInDeclaredModels = new Set([
-        "Media",
-        "MediaFormat",
-        "User",
-        "Role",
-        "FindOne",
-        "FindMany",
-      ]);
+      const builtInDeclaredModels = new Set(["Media", "MediaFormat", "User", "Role", "FindOne", "FindMany"]);
 
       // Generate import statements for unresolved references only.
       // Do not import models that are declared in the same consolidated file.
       const importStatements = Array.from(consolidatedImports)
-        .filter(
-          (model) => !consolidatedDeclaredModels.has(model) && !builtInDeclaredModels.has(model)
-        )
+        .filter((model) => !consolidatedDeclaredModels.has(model) && !builtInDeclaredModels.has(model))
         .map((model) => constructImportLine(model, quoteSymbol))
         .join("\n");
 
