@@ -45,7 +45,7 @@
     "format": "npx prettier --write .",
     "format:check": "npx prettier -c .",
     "prepare": "husky",
-    "release": "npm run format && npm run build && npm run verify && changelogen --release && npm publish && git push --follow-tags",
+    "release": "npm run test:unit && npm run test:ts:back && npm run test:ts:front && npm run format && npm run build && npm run verify && changelogen --release && npm publish && git push --follow-tags",
     "test:ts:back": "npx tsc -p server/tsconfig.json --noEmit",
     "test:ts:front": "npx tsc -p admin/tsconfig.json --noEmit",
     "test:unit": "jest",
