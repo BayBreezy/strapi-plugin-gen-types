@@ -244,4 +244,160 @@ describe("gen-types service", () => {
     expect(content).toContain("export interface MaintenanceRecord");
     expect(content).not.toContain("import {");
   });
+
+  it("applies include filters for api schemas", () => {
+    const vehicleSchema = {
+      attributes: {
+        vin: { type: "string", required: true },
+      },
+    };
+
+    const maintenanceRecordSchema = {
+      attributes: {
+        date: { type: "date" },
+      },
+    };
+
+    mockFs({
+      [path.join(cwd, "src")]: {
+        api: {
+          vehicle: {
+            "schema.json": JSON.stringify(vehicleSchema),
+          },
+          "maintenance-record": {
+            "schema.json": JSON.stringify(maintenanceRecordSchema),
+          },
+        },
+      },
+      [path.join(cwd, "genTypes")]: {},
+    });
+
+    const strapi = {
+      service: jest.fn(),
+      log: { info: jest.fn() },
+    } as any;
+
+    const service = serviceFactory({ strapi });
+
+    strapi.service.mockImplementation((name: string) => {
+      if (name === `plugin::${pluginName}.service`) {
+        return service;
+      }
+      throw new Error(`Unknown service ${name}`);
+    });
+
+    const outPath = path.join(cwd, "genTypes");
+
+    service.generateInterfaces(outPath, false, true, ["api::vehicle.*"], []);
+
+    expect(fs.existsSync(path.join(outPath, "vehicle.ts"))).toBe(true);
+    expect(fs.existsSync(path.join(outPath, "maintenanceRecord.ts"))).toBe(false);
+  });
+
+  it("applies exclude filters for components", () => {
+    const vehicleSchema = {
+      attributes: {
+        vin: { type: "string", required: true },
+        serviceRecord: {
+          type: "component",
+          component: "fleet.service-record",
+        },
+      },
+    };
+
+    const excludedComponentSchema = {
+      attributes: {
+        note: { type: "text" },
+      },
+    };
+
+    mockFs({
+      [path.join(cwd, "src")]: {
+        api: {
+          vehicle: {
+            "schema.json": JSON.stringify(vehicleSchema),
+          },
+        },
+        components: {
+          fleet: {
+            "service-record.json": JSON.stringify(excludedComponentSchema),
+          },
+        },
+      },
+      [path.join(cwd, "genTypes")]: {},
+    });
+
+    const strapi = {
+      service: jest.fn(),
+      log: { info: jest.fn() },
+    } as any;
+
+    const service = serviceFactory({ strapi });
+
+    strapi.service.mockImplementation((name: string) => {
+      if (name === `plugin::${pluginName}.service`) {
+        return service;
+      }
+      throw new Error(`Unknown service ${name}`);
+    });
+
+    const outPath = path.join(cwd, "genTypes");
+
+    service.generateInterfaces(outPath, false, true, [], ["component::fleet.service-record"]);
+
+    const vehicleFile = path.join(outPath, "vehicle.ts");
+    const vehicleContent = fs.readFileSync(vehicleFile, "utf-8");
+
+    expect(vehicleContent).not.toContain("import { FleetServiceRecord }");
+    expect(vehicleContent).toContain("serviceRecord?: any;");
+    expect(fs.existsSync(path.join(outPath, "fleetServiceRecord.ts"))).toBe(false);
+  });
+
+  it("keeps core user types when include filters are used", () => {
+    const vehicleSchema = {
+      attributes: {
+        vin: { type: "string", required: true },
+        owner: {
+          type: "relation",
+          relation: "manyToOne",
+          target: "plugin::users-permissions.user",
+        },
+      },
+    };
+
+    mockFs({
+      [path.join(cwd, "src")]: {
+        api: {
+          vehicle: {
+            "schema.json": JSON.stringify(vehicleSchema),
+          },
+        },
+      },
+      [path.join(cwd, "genTypes")]: {},
+    });
+
+    const strapi = {
+      service: jest.fn(),
+      log: { info: jest.fn() },
+    } as any;
+
+    const service = serviceFactory({ strapi });
+
+    strapi.service.mockImplementation((name: string) => {
+      if (name === `plugin::${pluginName}.service`) {
+        return service;
+      }
+      throw new Error(`Unknown service ${name}`);
+    });
+
+    const outPath = path.join(cwd, "genTypes");
+
+    service.generateInterfaces(outPath, false, true, ["api::vehicle.*"], []);
+
+    const vehicleFile = path.join(outPath, "vehicle.ts");
+    const vehicleContent = fs.readFileSync(vehicleFile, "utf-8");
+
+    expect(vehicleContent).toContain("import { User }");
+    expect(vehicleContent).toContain("owner?: User | null;");
+  });
 });

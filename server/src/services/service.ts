@@ -13,9 +13,57 @@ import {
   userFields,
 } from "../genTypes/constants";
 import { destr } from "destr";
+import micromatch from "micromatch";
 
 const constructImportLine = (model: string, quote: "'" | '"') =>
   `import { ${model} } from ${quote}./${_.camelCase(model)}${quote};`;
+
+const getApiUidFromSchemaFile = (schemaFile: string): string => {
+  const modelName = path.basename(path.dirname(schemaFile));
+  return `api::${modelName}.${modelName}`;
+};
+
+const getComponentUidFromSchemaFile = (schemaFile: string): string => {
+  const category = path.basename(path.dirname(schemaFile));
+  const name = path.parse(schemaFile).name;
+  return `component::${category}.${name}`;
+};
+
+const normalizePatterns = (patterns?: string[] | string): string[] => {
+  if (!patterns) {
+    return [];
+  }
+  if (Array.isArray(patterns)) {
+    return patterns.filter(Boolean);
+  }
+  return [patterns].filter(Boolean);
+};
+
+const coreUids = new Set(["plugin::users-permissions.user", "plugin::users-permissions.role"]);
+
+const isCoreUid = (uid: string): boolean => coreUids.has(uid);
+
+const matchesFilters = (uid: string, include?: string[] | string, exclude?: string[] | string): boolean => {
+  const includeList = normalizePatterns(include);
+  const excludeList = normalizePatterns(exclude);
+
+  if (isCoreUid(uid)) {
+    return !(excludeList.length > 0 && micromatch.isMatch(uid, excludeList));
+  }
+
+  if (includeList.length > 0 && !micromatch.isMatch(uid, includeList)) {
+    return false;
+  }
+
+  if (excludeList.length > 0 && micromatch.isMatch(uid, excludeList)) {
+    return false;
+  }
+
+  return true;
+};
+
+const shouldIncludeUid = (uid: string, include?: string[] | string, exclude?: string[] | string): boolean =>
+  matchesFilters(uid, include, exclude);
 
 const service = ({ strapi }: { strapi: Core.Strapi }) => ({
   /**
@@ -50,7 +98,11 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
   /**
    * Generate a TypeScript type for a Strapi attribute
    */
-  generateTypeForAttribute: (attribute: StrapiAttribute): string => {
+  generateTypeForAttribute: (
+    attribute: StrapiAttribute,
+    include?: string[] | string,
+    exclude?: string[] | string
+  ): string => {
     switch (attribute.type) {
       case "string":
       case "text":
@@ -81,6 +133,12 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
         }
         return "Media | null";
       case "component":
+        if (attribute.component) {
+          const componentUid = `component::${attribute.component}`;
+          if (!shouldIncludeUid(componentUid, include, exclude)) {
+            return "any";
+          }
+        }
         const componentName = _.upperFirst(_.camelCase(attribute.component));
         if (attribute.repeatable) {
           return `${componentName}[] | null`;
@@ -89,6 +147,9 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
       case "relation":
         // For relations, use the target to determine the type (model name)
         if (attribute.target) {
+          if (!shouldIncludeUid(attribute.target, include, exclude)) {
+            return "any";
+          }
           const relatedModel = strapi
             .service(`plugin::${pluginName}.service`)
             .getModelNameFromTarget(attribute.target);
@@ -106,7 +167,9 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
   generateInterfaceFromSchema: (
     modelName: string,
     schema: StrapiSchema,
-    isComponent = false
+    isComponent = false,
+    include?: string[] | string,
+    exclude?: string[] | string
   ): { interfaceString: string; imports: string[] } => {
     let interfaceString = `export interface ${_.upperFirst(_.camelCase(modelName))} {`;
 
@@ -120,11 +183,16 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
     }
     // Add attributes
     Object.entries(schema.attributes).forEach(([key, attribute]) => {
-      const tsType = strapi.service(`plugin::${pluginName}.service`).generateTypeForAttribute(attribute);
+      const tsType = strapi
+        .service(`plugin::${pluginName}.service`)
+        .generateTypeForAttribute(attribute, include, exclude);
       interfaceString += `  ${key}${attribute.required ? "" : "?"}: ${tsType};\n`;
 
       // Handle relations and add necessary imports
       if (attribute.type === "relation" && attribute.target) {
+        if (!shouldIncludeUid(attribute.target, include, exclude)) {
+          return;
+        }
         const relatedModel = strapi
           .service(`plugin::${pluginName}.service`)
           .getModelNameFromTarget(attribute.target);
@@ -141,6 +209,10 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
       }
       // for components, add the component import
       if (attribute.type === "component" && attribute.component) {
+        const componentUid = `component::${attribute.component}`;
+        if (!shouldIncludeUid(componentUid, include, exclude)) {
+          return;
+        }
         // replace the dots(.) with _ and then convert to camelCase
         const componentName = _.upperFirst(_.camelCase(attribute.component.replace(/\./g, "_")));
         if (!imports.includes(componentName)) {
@@ -153,7 +225,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
 
     return { interfaceString, imports };
   },
-  generateInterfaceStrings: () => {
+  generateInterfaceStrings: (include?: string[] | string, exclude?: string[] | string) => {
     const apiDir = `${process.cwd()}/src/api`;
     const componentsDir = `${process.cwd()}/src/components`;
 
@@ -164,6 +236,13 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
     if (fs.existsSync(componentsDir))
       componentSchemaFiles = strapi.service(`plugin::${pluginName}.service`).walkDirectory(componentsDir);
 
+    schemaFiles = schemaFiles.filter((schemaFile) =>
+      matchesFilters(getApiUidFromSchemaFile(schemaFile), include, exclude)
+    );
+    componentSchemaFiles = componentSchemaFiles.filter((schemaFile) =>
+      matchesFilters(getComponentUidFromSchemaFile(schemaFile), include, exclude)
+    );
+
     const holdingArray = new Map();
     componentSchemaFiles.forEach((schemaFile) => {
       const schemaJson = fs.readFileSync(schemaFile, "utf-8");
@@ -173,7 +252,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
       // Generate the TypeScript interface
       const { interfaceString, imports } = strapi
         .service(`plugin::${pluginName}.service`)
-        .generateInterfaceFromSchema(modelName, schema, true);
+        .generateInterfaceFromSchema(modelName, schema, true, include, exclude);
 
       const recordTitle = _.upperFirst(_.camelCase(modelName));
 
@@ -188,7 +267,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
       // Generate the TypeScript interface
       const { interfaceString, imports } = strapi
         .service(`plugin::${pluginName}.service`)
-        .generateInterfaceFromSchema(modelName, schema);
+        .generateInterfaceFromSchema(modelName, schema, false, include, exclude);
 
       const recordTitle = _.upperFirst(_.camelCase(modelName));
 
@@ -208,7 +287,13 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
   /**
    * Generate TypeScript interfaces from Strapi schema files
    */
-  generateInterfaces: (outPath: string, singleFile: boolean, singleQuote: boolean = true) => {
+  generateInterfaces: (
+    outPath: string,
+    singleFile: boolean,
+    singleQuote: boolean = true,
+    include?: string[] | string,
+    exclude?: string[] | string
+  ) => {
     const apiDir = `${process.cwd()}/src/api`;
     const componentsDir = `${process.cwd()}/src/components`;
     const quoteSymbol = singleQuote ? `'` : `"`;
@@ -218,6 +303,13 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
     let componentSchemaFiles = [];
     if (fs.existsSync(componentsDir))
       componentSchemaFiles = strapi.service(`plugin::${pluginName}.service`).walkDirectory(componentsDir);
+
+    schemaFiles = schemaFiles.filter((schemaFile) =>
+      matchesFilters(getApiUidFromSchemaFile(schemaFile), include, exclude)
+    );
+    componentSchemaFiles = componentSchemaFiles.filter((schemaFile) =>
+      matchesFilters(getComponentUidFromSchemaFile(schemaFile), include, exclude)
+    );
 
     let consolidatedInterfaces = "";
     let consolidatedImports: Set<string> = new Set();
@@ -231,7 +323,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
       // Generate the TypeScript interface
       const { interfaceString, imports } = strapi
         .service(`plugin::${pluginName}.service`)
-        .generateInterfaceFromSchema(modelName, schema, true);
+        .generateInterfaceFromSchema(modelName, schema, true, include, exclude);
       const declaredModel = _.upperFirst(_.camelCase(modelName));
 
       if (singleFile) {
@@ -267,7 +359,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
       // Generate the TypeScript interface
       const { interfaceString, imports } = strapi
         .service(`plugin::${pluginName}.service`)
-        .generateInterfaceFromSchema(modelName, schema);
+        .generateInterfaceFromSchema(modelName, schema, false, include, exclude);
       const declaredModel = _.upperFirst(_.camelCase(modelName));
 
       if (singleFile) {

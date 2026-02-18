@@ -17,6 +17,18 @@ export type GenTypesConfig = {
    */
   singleFile: boolean;
   /**
+   * Glob patterns to include content types/components for generation
+   *
+   * Matches against: api::name.name or component::category.name
+   */
+  include?: string[];
+  /**
+   * Glob patterns to exclude content types/components for generation
+   *
+   * Matches against: api::name.name or component::category.name
+   */
+  exclude?: string[];
+  /**
    * Formatting options for generated files
    */
   prettier?: {
@@ -33,6 +45,8 @@ export default {
   default: ({ env }) => ({
     outputLocation: env("GEN_TYPES_OUTPUT_LOCATION", "src/genTypes"),
     singleFile: env("GEN_TYPES_SINGLE_FILE", false),
+    include: env("GEN_TYPES_INCLUDE", []),
+    exclude: env("GEN_TYPES_EXCLUDE", []),
     prettier: {
       singleQuote: env("GEN_TYPES_SINGLE_QUOTE", true),
     },
