@@ -11,3 +11,13 @@ updates:
       interval: "weekly"
       day: "sunday"
       time: "06:00"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "@types/react"
+      - dependency-name: "@types/react-dom"
+      - dependency-name: "react"
+      - dependency-name: "react-dom"
+      - dependency-name: "react-router-dom"
+      - dependency-name: "react-intl"
