@@ -8,14 +8,15 @@ const register = ({ strapi }: { strapi: Core.Strapi }) => {
   } else {
     const config: GenTypesConfig = strapi.config.get("plugin::gen-types");
     strapi
-        .service(`plugin::${pluginName}.service`)
-        .generateInterfaces(
-          config.outputLocation,
-          config.singleFile,
-          config?.prettier?.singleQuote,
-          config?.include,
-          config?.exclude
-        );
+      .service(`plugin::${pluginName}.service`)
+      .generateInterfaces(
+        config.outputLocation,
+        config.singleFile,
+        config?.prettier?.singleQuote,
+        config?.clearOutput,
+        config?.include,
+        config?.exclude
+      );
     strapi.log.info("Gen Types Plugin registered");
   }
 };

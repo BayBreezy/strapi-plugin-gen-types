@@ -291,12 +291,24 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
     outPath: string,
     singleFile: boolean,
     singleQuote: boolean = true,
+    clearOutput: boolean = false,
     include?: string[] | string,
     exclude?: string[] | string
   ) => {
     const apiDir = `${process.cwd()}/src/api`;
     const componentsDir = `${process.cwd()}/src/components`;
     const quoteSymbol = singleQuote ? `'` : `"`;
+    if (clearOutput) {
+      if (fs.existsSync(outPath)) {
+        const stat = fs.statSync(outPath);
+        if (stat.isDirectory()) {
+          fs.rmSync(outPath, { recursive: true, force: true });
+        } else {
+          fs.rmSync(outPath, { force: true });
+        }
+      }
+    }
+
     let schemaFiles = [];
     if (fs.existsSync(apiDir))
       schemaFiles = strapi.service(`plugin::${pluginName}.service`).walkDirectory(apiDir);

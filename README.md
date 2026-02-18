@@ -30,6 +30,7 @@ The following options are available:
 - `singleFile` - Whether to generate a single file for all types or separate files for each collection. Default: `false`
 - `include` - Glob patterns to include content types/components. Matches `api::name.name` and `component::category.name`
 - `exclude` - Glob patterns to exclude content types/components. Matches `api::name.name` and `component::category.name`
+- `clearOutput` - Remove the output file/folder before generating types. Default: `false`
 
 When a referenced type is excluded, the attribute will be typed as `any` and no import is generated.
 Core Strapi types (`User`, `Role`) are always kept unless you explicitly exclude their UIDs.
@@ -43,6 +44,7 @@ export default ({ env }) => ({
       outputLocation: "myTypes.ts",
       // If this is true, then the outputLocation should be the location to a .ts file
       singleFile: true,
+      clearOutput: true,
       include: ["api::blog.*", "component::shared.*"],
       exclude: ["api::internal.*"],
     },

@@ -17,6 +17,12 @@ export type GenTypesConfig = {
    */
   singleFile: boolean;
   /**
+   * Whether to remove the output file/folder before generating types
+   *
+   * @default false
+   */
+  clearOutput?: boolean;
+  /**
    * Glob patterns to include content types/components for generation
    *
    * Matches against: api::name.name or component::category.name
@@ -45,6 +51,7 @@ export default {
   default: ({ env }) => ({
     outputLocation: env("GEN_TYPES_OUTPUT_LOCATION", "src/genTypes"),
     singleFile: env("GEN_TYPES_SINGLE_FILE", false),
+    clearOutput: env("GEN_TYPES_CLEAR_OUTPUT", false),
     include: env("GEN_TYPES_INCLUDE", []),
     exclude: env("GEN_TYPES_EXCLUDE", []),
     prettier: {
