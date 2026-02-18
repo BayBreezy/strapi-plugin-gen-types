@@ -221,6 +221,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
 
     let consolidatedInterfaces = "";
     let consolidatedImports: Set<string> = new Set();
+    let consolidatedDeclaredModels: Set<string> = new Set();
 
     componentSchemaFiles.forEach((schemaFile) => {
       const schemaJson = fs.readFileSync(schemaFile, "utf-8");
@@ -231,11 +232,13 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
       const { interfaceString, imports } = strapi
         .service(`plugin::${pluginName}.service`)
         .generateInterfaceFromSchema(modelName, schema, true);
+      const declaredModel = _.upperFirst(_.camelCase(modelName));
 
       if (singleFile) {
         // Consolidate interfaces and collect unique imports
         consolidatedInterfaces += `\n${interfaceString}`;
         imports.forEach((importedModel) => consolidatedImports.add(importedModel));
+        consolidatedDeclaredModels.add(declaredModel);
       } else {
         // Ensure output directory exists
         if (!fs.existsSync(outPath)) {
@@ -262,11 +265,13 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
       const { interfaceString, imports } = strapi
         .service(`plugin::${pluginName}.service`)
         .generateInterfaceFromSchema(modelName, schema);
+      const declaredModel = _.upperFirst(_.camelCase(modelName));
 
       if (singleFile) {
         // Consolidate interfaces and collect unique imports
         consolidatedInterfaces += `\n${interfaceString}`;
         imports.forEach((importedModel) => consolidatedImports.add(importedModel));
+        consolidatedDeclaredModels.add(declaredModel);
       } else {
         // Ensure output directory exists
         if (!fs.existsSync(outPath)) {
@@ -285,18 +290,31 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
     });
 
     if (singleFile) {
-      // Generate import statements for all the unique imports
-      const importStatements = Array.from(consolidatedImports)
-        .map((model) => constructImportLine(model, quoteSymbol))
-        .join("\n");
-
       // Add mediaFields, userFields, roleFields, findOnePayload, and findManyPayload to the consolidated
       // interfaces file
       consolidatedInterfaces += `\n${mediaFields}\n${userFields}\n${roleFields}\n${findOnePayload}\n${findManyPayload}`;
 
-      const finalContent = singleFile
-        ? consolidatedInterfaces
-        : `${importStatements}\n\n${consolidatedInterfaces}`;
+      const builtInDeclaredModels = new Set([
+        "Media",
+        "MediaFormat",
+        "User",
+        "Role",
+        "FindOne",
+        "FindMany",
+      ]);
+
+      // Generate import statements for unresolved references only.
+      // Do not import models that are declared in the same consolidated file.
+      const importStatements = Array.from(consolidatedImports)
+        .filter(
+          (model) => !consolidatedDeclaredModels.has(model) && !builtInDeclaredModels.has(model)
+        )
+        .map((model) => constructImportLine(model, quoteSymbol))
+        .join("\n");
+
+      const finalContent = importStatements
+        ? `${importStatements}\n\n${consolidatedInterfaces}`
+        : consolidatedInterfaces;
       fs.writeFileSync(outPath, finalContent);
       strapi.log.info(`Generated consolidated interfaces at ${outPath}`);
     }
