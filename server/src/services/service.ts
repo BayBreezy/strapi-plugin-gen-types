@@ -194,7 +194,8 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
       const tsType = strapi
         .service(`plugin::${pluginName}.service`)
         .generateTypeForAttribute(attribute, include, exclude);
-      interfaceString += `  ${key}${attribute.required ? "" : "?"}: ${tsType};\n`;
+      const isOptional = !attribute.required || !!attribute.conditions;
+      interfaceString += `  ${key}${isOptional ? "?" : ""}: ${tsType};\n`;
 
       // Handle relations and add necessary imports
       if (attribute.type === "relation" && attribute.target) {
