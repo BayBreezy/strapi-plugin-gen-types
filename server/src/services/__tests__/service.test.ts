@@ -57,7 +57,7 @@ describe("gen-types service", () => {
 
     expect(content).toContain("export interface Vehicle");
     expect(content).toContain("siblingVehicle?: Vehicle[] | null;");
-    expect(content).not.toContain("import { Vehicle }");
+    expect(content).not.toContain("import type { Vehicle }");
   });
 
   it("imports other models when referenced", () => {
@@ -118,15 +118,15 @@ describe("gen-types service", () => {
     const vehicleFile = path.join(outPath, "vehicle.ts");
     const vehicleContent = fs.readFileSync(vehicleFile, "utf-8");
 
-    expect(vehicleContent).toContain("import { MaintenanceRecord }");
+    expect(vehicleContent).toContain("import type { MaintenanceRecord }");
     expect(vehicleContent).toContain("maintenanceRecords?: MaintenanceRecord[] | null;");
-    expect(vehicleContent).not.toContain("import { Vehicle }");
+    expect(vehicleContent).not.toContain("import type { Vehicle }");
 
     const maintenanceFile = path.join(outPath, "maintenanceRecord.ts");
     const maintenanceContent = fs.readFileSync(maintenanceFile, "utf-8");
 
-    expect(maintenanceContent).toContain("import { Vehicle }");
-    expect(maintenanceContent).not.toContain("import { MaintenanceRecord }");
+    expect(maintenanceContent).toContain("import type { Vehicle }");
+    expect(maintenanceContent).not.toContain("import type { MaintenanceRecord }");
   });
 
   it("imports component types for component attributes", () => {
@@ -184,7 +184,7 @@ describe("gen-types service", () => {
     const vehicleFile = path.join(outPath, "vehicle.ts");
     const vehicleContent = fs.readFileSync(vehicleFile, "utf-8");
 
-    expect(vehicleContent).toContain("import { FleetServiceRecord }");
+    expect(vehicleContent).toContain("import type { FleetServiceRecord }");
     expect(vehicleContent).toContain("serviceRecord?: FleetServiceRecord | null;");
   });
 
@@ -242,7 +242,7 @@ describe("gen-types service", () => {
 
     expect(content).toContain("export interface Vehicle");
     expect(content).toContain("export interface MaintenanceRecord");
-    expect(content).not.toContain("import {");
+    expect(content).not.toContain("import type {");
   });
 
   it("applies include filters for api schemas", () => {
@@ -348,7 +348,7 @@ describe("gen-types service", () => {
     const vehicleFile = path.join(outPath, "vehicle.ts");
     const vehicleContent = fs.readFileSync(vehicleFile, "utf-8");
 
-    expect(vehicleContent).not.toContain("import { FleetServiceRecord }");
+    expect(vehicleContent).not.toContain("import type { FleetServiceRecord }");
     expect(vehicleContent).toContain("serviceRecord?: any;");
     expect(fs.existsSync(path.join(outPath, "fleetServiceRecord.ts"))).toBe(false);
   });
@@ -397,7 +397,7 @@ describe("gen-types service", () => {
     const vehicleFile = path.join(outPath, "vehicle.ts");
     const vehicleContent = fs.readFileSync(vehicleFile, "utf-8");
 
-    expect(vehicleContent).toContain("import { User }");
+    expect(vehicleContent).toContain("import type { User }");
     expect(vehicleContent).toContain("owner?: User | null;");
   });
 
