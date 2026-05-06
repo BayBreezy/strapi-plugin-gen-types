@@ -17,7 +17,7 @@ import {
 import { pluginName, StrapiAttribute, StrapiSchema } from "../genTypes/types";
 
 const constructImportLine = (model: string, quote: "'" | '"') =>
-  `import { ${model} } from ${quote}./${_.camelCase(model)}${quote};`;
+  `import type { ${model} } from ${quote}./${_.camelCase(model)}${quote};`;
 
 const getApiUidFromSchemaFile = (schemaFile: string): string => {
   const modelName = path.basename(path.dirname(schemaFile));
